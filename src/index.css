@@ -1,0 +1,11 @@
+.box::-webkit-scrollbar {
+  display: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.list-watched::-webkit-scrollbar {
+  display: none;
+}
