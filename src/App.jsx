@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import StarRating from './StarRating';
 
-const average = (arr) =>
-  arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
+const average = (arr) => {
+  const validValues = arr.filter((value) => !isNaN(value));
+  return validValues.reduce((acc, cur) => acc + cur, 0) / validValues.length;
+};
 
 const OMDB_API_KEY = '91a2b660';
 
@@ -93,19 +95,6 @@ export default function App() {
         </Box>
       </Main>
     </>
-  );
-}
-
-function Loader() {
-  return <p className="loader">Loading...</p>;
-}
-
-function ErrorMessage({ message }) {
-  return (
-    <p className="error">
-      <span>⛔</span>
-      {message}
-    </p>
   );
 }
 
@@ -349,5 +338,18 @@ function WatchedMovie({ movie, onDelete }) {
         </button>
       </div>
     </li>
+  );
+}
+
+function Loader() {
+  return <p className="loader">Loading...</p>;
+}
+
+function ErrorMessage({ message }) {
+  return (
+    <p className="error">
+      <span>⛔</span>
+      {message}
+    </p>
   );
 }
