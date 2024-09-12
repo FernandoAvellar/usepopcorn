@@ -79,7 +79,7 @@ export default function App() {
         <Box>
           {selected ? (
             <MovieDetails
-              selectId={selected}
+              selectedId={selected}
               onCloseMovie={handleCloseMovie}
               onAddMovieToWatchedList={handleAddMovieToWatchedList}
             />
@@ -178,60 +178,48 @@ function Movie({ movie, onSelectMovie }) {
   );
 }
 
-function MovieDetails({ selectId, onCloseMovie, onAddMovieToWatchedList }) {
-  const [poster, setPoster] = useState('');
-  const [title, setTitle] = useState('');
-  const [released, setReleased] = useState('');
-  const [runtime, setRuntime] = useState('');
-  const [genre, setGenre] = useState('');
-  const [imdbRating, setImdbRating] = useState('');
-  const [plot, setPlot] = useState('');
-  const [actors, setActors] = useState('');
-  const [director, setDirector] = useState('');
+function MovieDetails({ selectedId, onCloseMovie, onAddMovieToWatchedList }) {
+  const [movie, setMovie] = useState([]);
   const [userRating, setUserRating] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    Title: title,
+    Poster: poster,
+    Runtime: runtime,
+    imdbRating,
+    Plot: plot,
+    Released: released,
+    Actors: actors,
+    Director: director,
+    Genre: genre,
+  } = movie;
 
   useEffect(
     function () {
-      async function fetchMovieDetail(selectId) {
-        try {
-          const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${selectId}`
-          );
+      async function fetchMovieDetails(selectId) {
+        setIsLoading(true);
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${selectedId}`
+        );
 
-          if (!res.ok) throw new Error('Failed to fetch movie detail');
-
-          const data = await res.json();
-
-          setPoster(data.Poster);
-          setTitle(data.Title);
-          setReleased(data.Released);
-          setRuntime(data.Runtime.split(' ')[0]);
-          setGenre(data.Genre);
-          setImdbRating(data.Ratings[0].Value.split('/')[0]);
-          setPlot(data.Plot);
-          setActors(data.Actors);
-          setDirector(data.Director);
-        } catch (err) {
-          console.error(err.message);
-        }
+        const data = await res.json();
+        setMovie(data);
+        setIsLoading(false);
       }
-      fetchMovieDetail(selectId);
+      fetchMovieDetails(selectedId);
     },
-    [selectId]
+    [selectedId]
   );
-
-  function handleRating(rating) {
-    setUserRating(rating);
-  }
 
   function handleAddToList() {
     const watchedMovie = {
-      imdbID: selectId,
+      imdbID: selectedId,
       title,
       imdbRating: Number(imdbRating),
       poster,
       userRating: Number(userRating),
-      runtime: Number(runtime),
+      runtime: Number(runtime.split(' ').at(0)),
     };
     onAddMovieToWatchedList(watchedMovie);
     onCloseMovie();
@@ -239,38 +227,49 @@ function MovieDetails({ selectId, onCloseMovie, onAddMovieToWatchedList }) {
 
   return (
     <div className="details">
-      <header className="header">
-        <button className="btn-back" onClick={onCloseMovie}>
-          &larr;
-        </button>
-        <img src={poster} alt={`${title} poster`} />
-        <div className="details-overview">
-          <h2> {title} </h2>
-          <p>
-            {released} • {runtime} min
-          </p>
-          <p>{genre}</p>
-          <p>⭐{imdbRating} IMDb rating</p>
-        </div>
-      </header>
-      <section>
-        <div className="rating">
-          <StarRating
-            onSettingRating={(rating) => handleRating(rating)}
-            maxRating={10}
-            color="#fcc419"
-            size={18}
-          />
-          {userRating > 0 && (
-            <button className="btn-add" onClick={handleAddToList}>
-              + Add to list
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <header className="header">
+            <button className="btn-back" onClick={onCloseMovie}>
+              &larr;
             </button>
-          )}
-        </div>
-        <p>{plot}</p>
-        <p>Starring {actors}</p>
-        <p>Directed by {director}</p>
-      </section>
+            <img src={poster} alt={`${title} poster`} />
+            <div className="details-overview">
+              <h2> {title} </h2>
+              <p>
+                {released} &bull; {runtime}
+              </p>
+              <p>{genre}</p>
+              <p>
+                <span>⭐</span>
+                {imdbRating} IMDb rating
+              </p>
+            </div>
+          </header>
+          <section>
+            <div className="rating">
+              <StarRating
+                onSettingRating={(rating) => setUserRating(rating)}
+                maxRating={10}
+                color="#fcc419"
+                size={18}
+              />
+              {userRating > 0 && (
+                <button className="btn-add" onClick={handleAddToList}>
+                  + Add to list
+                </button>
+              )}
+            </div>
+            <p>
+              <em>{plot}</em>
+            </p>
+            <p>Starring {actors}</p>
+            <p>Directed by {director}</p>
+          </section>
+        </>
+      )}
     </div>
   );
 }
