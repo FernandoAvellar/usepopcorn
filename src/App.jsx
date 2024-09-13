@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from 'react';
 import StarRating from './StarRating';
 
@@ -275,6 +276,7 @@ function MovieDetails({
     setUserRating('');
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   function handleClose() {
     onCloseMovie();
     setUserRating('');
