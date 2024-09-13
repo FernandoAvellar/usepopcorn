@@ -18,12 +18,15 @@ export default function App() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchMovies() {
       try {
         setIsLoading(true);
         setError('');
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${query}`
+          `http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${query}`,
+          { signal: controller.signal }
         );
 
         if (!res.ok) throw new Error('Failed to fetch movies');
@@ -32,9 +35,12 @@ export default function App() {
         if (data.Response === 'False') throw new Error('Movie not found');
 
         setMovies(data.Search);
+        setError('');
       } catch (err) {
-        console.error(err.message);
-        setError(err.message);
+        if (err.name !== 'AbortError') {
+          console.log(err.message);
+          setError(err.message);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -44,7 +50,11 @@ export default function App() {
       setError('');
       return;
     }
+
+    handleCloseMovie();
     fetchMovies();
+
+    return () => controller.abort(); //Função de cleanup
   }, [query]);
 
   function handleSelectMovie(movieId) {
@@ -209,7 +219,24 @@ function MovieDetails({
 
   useEffect(
     function () {
-      async function fetchMovieDetails(selectId) {
+      function callBack(e) {
+        if (e.code === 'Escape') {
+          handleClose();
+        }
+      }
+
+      document.addEventListener('keydown', callBack);
+
+      return function () {
+        document.removeEventListener('keydown', callBack);
+      };
+    },
+    [handleClose]
+  );
+
+  useEffect(
+    function () {
+      async function fetchMovieDetails(selectedId) {
         setIsLoading(true);
         const res = await fetch(
           `http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${selectedId}`
@@ -222,6 +249,16 @@ function MovieDetails({
       fetchMovieDetails(selectedId);
     },
     [selectedId]
+  );
+
+  useEffect(
+    function () {
+      if (!title) return;
+      document.title = `Movie | ${title}`;
+
+      return () => (document.title = 'usePopcorn');
+    },
+    [title]
   );
 
   function handleAddToList() {
