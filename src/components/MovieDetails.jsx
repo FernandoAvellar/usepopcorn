@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useCallback } from 'react';
+import { useKey } from '../hooks/useKey';
 import Loader from './Loader';
 import StarRating from './StarRating';
 
@@ -37,22 +38,7 @@ export default function MovieDetails({
     setUserRating('');
   }, [onCloseMovie]);
 
-  useEffect(
-    function () {
-      function callBack(e) {
-        if (e.code === 'Escape') {
-          handleClose();
-        }
-      }
-
-      document.addEventListener('keydown', callBack);
-
-      return function () {
-        document.removeEventListener('keydown', callBack);
-      };
-    },
-    [handleClose]
-  );
+  useKey('Escape', handleClose);
 
   useEffect(
     function () {

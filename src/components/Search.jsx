@@ -1,29 +1,19 @@
-import { useEffect, useRef } from 'react';
-import { useId } from 'react';
-
 /* eslint-disable react/prop-types */
+import { useRef, useId } from 'react';
+import { useKey } from '../hooks/useKey';
+
 export default function Search({ query, setQuery }) {
   const inputEl = useRef(null);
   const inputId = useId();
 
-  useEffect(
-    function () {
-      function callBack(e) {
-        if (document.activeElement === inputEl.current) return;
-        if (e.code === 'Enter' || e.code === 'NumpadEnter') {
-          inputEl.current.focus();
-          setQuery('');
-        }
-      }
+  function handleEnterKeyPressed() {
+    if (document.activeElement === inputEl.current) return;
+    inputEl.current.focus();
+    setQuery('');
+  }
 
-      document.addEventListener('keydown', callBack);
-
-      return function () {
-        document.removeEventListener('keydown', callBack);
-      };
-    },
-    [setQuery]
-  );
+  useKey('Enter', handleEnterKeyPressed);
+  useKey('NumpadEnter', handleEnterKeyPressed);
 
   return (
     <input
