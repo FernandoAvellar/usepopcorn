@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useMovies } from './hooks/useMovies';
+import { useLocalStorageState } from './hooks/useLocalStorageState';
 import NavBar from './components/NavBar';
 import Search from './components/Search';
 import NumResults from './components/NumResults';
@@ -17,10 +18,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const handleCloseMovie = useCallback(() => setSelected(null), []);
   const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
-  const [watched, setWatched] = useState(function () {
-    const storedValue = JSON.parse(localStorage.getItem('watchedMovies'));
-    return storedValue ? storedValue : [];
-  });
+  const [watched, setWatched] = useLocalStorageState([], 'watchedMovies');
 
   function handleSelectMovie(movieId) {
     setSelected(movieId === selected ? null : movieId);
@@ -33,13 +31,6 @@ export default function App() {
   function handleDeleteMovieFromWatchedList(id) {
     setWatched(watched.filter((watched) => watched.imdbID !== id));
   }
-
-  useEffect(
-    function () {
-      localStorage.setItem('watchedMovies', JSON.stringify(watched));
-    },
-    [watched]
-  );
 
   return (
     <>
