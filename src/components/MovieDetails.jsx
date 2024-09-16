@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Loader from './Loader';
 import StarRating from './StarRating';
 
@@ -31,6 +31,11 @@ export default function MovieDetails({
   const watchedUserRating = watched.find(
     (m) => m.imdbID === selectedId
   )?.userRating;
+
+  const handleClose = useCallback(() => {
+    onCloseMovie();
+    setUserRating('');
+  }, [onCloseMovie]);
 
   useEffect(
     function () {
@@ -86,12 +91,6 @@ export default function MovieDetails({
       runtime: Number(runtime.split(' ').at(0)),
     };
     onAddMovieToWatchedList(watchedMovie);
-    onCloseMovie();
-    setUserRating('');
-  }
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  function handleClose() {
     onCloseMovie();
     setUserRating('');
   }
