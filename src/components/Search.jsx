@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
+import { useId } from 'react';
 
 /* eslint-disable react/prop-types */
 export default function Search({ query, setQuery }) {
   const inputEl = useRef(null);
+  const inputId = useId();
 
   useEffect(
     function () {
@@ -28,9 +30,10 @@ export default function Search({ query, setQuery }) {
       className="search"
       type="text"
       placeholder="Search movies..."
+      autoFocus
+      id={inputId}
       value={query}
       onChange={(e) => setQuery(e.target.value)}
-      autoFocus
       ref={inputEl}
     />
   );
